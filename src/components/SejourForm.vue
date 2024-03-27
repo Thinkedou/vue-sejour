@@ -1,8 +1,9 @@
 <script setup>
 import {ref} from 'vue'
+import {useRouter} from 'vue-router'
 
 const emit = defineEmits(['onFormChange'])
-
+const router = useRouter()
 
 const firstName = ref('')
 const lastName  = ref('')
@@ -21,7 +22,17 @@ const hebergementPrice = {
 }
 
 const okHandler = ()=>{
-      const recapCommand = {}
+  const recap = {
+    firstName:firstName.value,
+    lastName:lastName.value,
+    optionsSejour:sejourOptions.value,
+    hebergement:typeHebergement.value,
+    petitDej: ptiDej.value,
+    totalPrice:prixTotal.value
+  }
+  localStorage.setItem("sejourRecap",JSON.stringify(recap));
+  router.push({name:'recap'})
+
 }
 
 const updateFormHandler = ()=>{
