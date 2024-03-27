@@ -7,17 +7,52 @@ const emit = defineEmits(['onFormChange'])
 const firstName = ref('')
 const lastName  = ref('')
 const typeHebergement = ref('default')
+const sejourOptions = ref([])
+const ptiDej = ref('false')
+const prixTotal = ref(0)
 
+const formErrors = ref([])
 
-const okHandler = ()=>{
-      console.log('OK FORM')
-      const recapCommand = {}
-      console.log(recapCommand)
-      
+const hebergementPrice = {
+  default:0,
+  tente:30,
+  toile:50,
+  pierre:100
 }
 
-const hebergementHandler=()=>{
-      emit('onFormChange',typeHebergement.value)
+const okHandler = ()=>{
+      const recapCommand = {}
+}
+
+const updateFormHandler = ()=>{
+  // première étape: calcul de l'hebergement de base
+  prixTotal.value = 0
+  formErrors.value.length = 0
+  prixTotal.value = hebergementPrice[typeHebergement.value]
+
+
+  if(typeHebergement.value=='default'){
+    formErrors.value.push('merci de séléctionner un type d\'hebergement')
+  }
+
+  if(sejourOptions.value.length>0){
+      if(sejourOptions.value.includes('kayak')){
+        prixTotal.value+=30
+      }
+      if(sejourOptions.value.includes('draps')){
+        prixTotal.value+=5
+      }
+  }
+
+  if(ptiDej.value=="true"){
+    prixTotal.value+=10
+  }
+  console.warn('PRIX TOTAL::::', prixTotal.value )
+  const toSend = {
+    hebergement:typeHebergement.value,
+    price:prixTotal.value
+  }
+  emit('onFormChange',toSend)
 }
 
 
@@ -47,7 +82,7 @@ const hebergementHandler=()=>{
                 <!-- Select   -->
                 <label for="type">Type d'hebergement :  </label>
                 <select 
-                  @change="hebergementHandler"
+                  @change="updateFormHandler"
                   class="custom-select d-btypelock w-100" v-model="typeHebergement">
                   <option value="default">Choisissez...</option>
                   <option value="tente">Emplacement Tentes</option>
@@ -58,27 +93,28 @@ const hebergementHandler=()=>{
                 <hr class="mb-4">
                 <!-- Checkboxes button  -->
                 <h4 class="my-2">Les options de séjour </h4>
+                <span>{{sejourOptions}}</span>
                 <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" name="optionsSejour" value="kayak" id="ok-kayak">
+                  <input v-model="sejourOptions" @change="updateFormHandler" type="checkbox" class="custom-control-input" name="optionsSejour" value="kayak" id="ok-kayak">
                   <label class="custom-control-label" for="ok-kayak">Location Kayak (+30€)</label>
                 </div>
                 <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" name="optionsSejour" value="draps" id="ok-draps">
+                  <input v-model="sejourOptions" @change="updateFormHandler" type="checkbox" class="custom-control-input" name="optionsSejour" value="draps" id="ok-draps">
                   <label class="custom-control-label" for="ok-draps">Draps (+5€) </label>
                 </div>
                 <h4 class="mt-3">Petit Déjeuner</h4>
 
                     <div class="d-block my-3">
                       <div class="custom-control custom-radio">
-                        <input id="ouiPetitDej" name="petitDej" type="radio" class="custom-control-input" checked >
+                        <input @change="updateFormHandler" id="ouiPetitDej" value="true" v-model="ptiDej" name="petitDej" type="radio" class="custom-control-input" checked >
                         <label class="custom-control-label" for="ouiPetitDej">Oui (+10€)</label>
                       </div>
                       <div class="custom-control custom-radio">
-                        <input id="nonPetitDej" name="petitDej" type="radio" class="custom-control-input" >
+                        <input @change="updateFormHandler" id="nonPetitDej"  value="false" v-model="ptiDej" name="petitDej" type="radio" class="custom-control-input" >
                         <label class="custom-control-label" for="nonPetitDej">Non</label>
                       </div>
                 </div>
-                <div class="alert alert-warning" role="alert">
+                <div v-if="formErrors.length>0" class="alert alert-warning" role="alert">
                   Erreur, merci de séléctionner un hébergement
                 </div>
                 <div class='mt-2'>
